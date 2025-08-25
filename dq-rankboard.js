@@ -8,7 +8,9 @@
       brands,
       questions,
       scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
-      scaleWeight
+      scaleWeight,
+      onChange,       // 🔹 optional callback
+      initialState    // 🔹 optional restore object
     } = config;
 
     const weight = scaleWeight || Object.fromEntries(scaleLabels.map((l, i) => [l, i + 1]));
@@ -26,7 +28,7 @@
     </div>`;
 
     // Rows
-    questions.forEach((q, rowIdx) => {
+    questions.forEach((q) => {
       const row = document.createElement('div');
       row.className = 'dq-row';
       row.innerHTML = `<div class="dq-row-label">${q}</div>`;
@@ -67,7 +69,10 @@
           group: { name: group, pull: true, put: true },
           animation: 150,
           onMove: e => e.from.dataset.row === e.to.dataset.row,
-          onSort: updateRanks
+          onSort: () => {
+            updateRanks();
+            triggerChange();   // 🔹 emit change
+          }
         });
       });
     });
@@ -94,8 +99,15 @@
       });
     }
 
-    // Public API (optional)
-    return {
+    // 🔹 Emit state via onChange
+    function triggerChange() {
+      if (typeof onChange === 'function') {
+        onChange(api.getResultsJson());
+      }
+    }
+
+    // Public API
+    const api = {
       getResultsJson() {
         const out = [];
         board.querySelectorAll('.dq-row').forEach((row, rIdx) => {
@@ -114,7 +126,47 @@
           });
         });
         return out;
+      },
+      setState(state) {
+        restoreState(state);
+        updateRanks();
+        triggerChange();
       }
     };
+
+    // 🔹 Restore from initialState if provided
+    function restoreState(state) {
+      if (!state || !Array.isArray(state)) return;
+      state.forEach(item => {
+        const { question, brand, scale } = item;
+        const rowIdx = questions.indexOf(question);
+        if (rowIdx === -1) return;
+
+        const row = board.querySelectorAll('.dq-row')[rowIdx];
+        const li = row.querySelector(`li[data-brand="${brand}"]`);
+        if (!li) return;
+
+        let targetUl;
+        if (scaleLabels.includes(scale)) {
+          // scale column index (skip unsorted)
+          const colIdx = scaleLabels.indexOf(scale) + 1;
+          targetUl = row.querySelectorAll('ul.dq-card-list')[colIdx];
+        } else {
+          // fallback to unsorted
+          targetUl = row.querySelector('ul.dq-card-list');
+        }
+        if (targetUl) targetUl.appendChild(li);
+      });
+    }
+
+    if (initialState) {
+      restoreState(initialState);
+      updateRanks();
+    }
+
+    // Emit initial state
+    triggerChange();
+
+    return api;
   };
 })();
