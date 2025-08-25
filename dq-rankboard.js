@@ -1,90 +1,120 @@
-/* dq-rankboard SHIM — minimal, non-invasive.
-   - Keeps existing DOM & behavior.
-   - Adds onChange(state) emission (debounced) using DOM reads.
-   - Adds getState() helper to the returned API.
-*/
+(() => {
+  // Avoid redefining if script is loaded multiple times
+  if (window.initDqRankBoard) return;
 
-(function(){
-  if (typeof window.initDqRankBoard !== 'function') {
-    console.error('[RB shim] initDqRankBoard not found. Load original file first.');
-    return;
-  }
+  // Expose a single global function
+  window.initDqRankBoard = function initDqRankBoard(container, config) {
+    const {
+      brands,
+      questions,
+      scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
+      scaleWeight
+    } = config;
 
-  var origInit = window.initDqRankBoard;
+    const weight = scaleWeight || Object.fromEntries(scaleLabels.map((l, i) => [l, i + 1]));
 
-  function debounce(fn, wait){ var t; return function(){ clearTimeout(t); var a=arguments; t=setTimeout(function(){ fn.apply(null,a); }, wait); }; }
+    // Clear previous content if any
+    container.innerHTML = '';
+    const board = document.createElement('div');
+    board.className = 'dq-board';
 
-  // DOM readers – adjust selectors ONLY if your original markup differs.
-  function buildState(container) {
-    var list = container.querySelector('[data-rankboard-list]') || container.querySelector('.rb-list');
-    var order = list ? Array.from(list.children).map(function(el){ return el.getAttribute('data-brand-key'); }).filter(Boolean) : [];
+    // Header
+    board.innerHTML = `<div class="dq-header-row">
+      <div class="dq-header-spacer"></div>
+      <div class="dq-header-unsorted">Unsorted</div>
+      ${scaleLabels.map(l => `<div class="dq-header-col">${l}</div>`).join('')}
+    </div>`;
 
-    var scores = {};
-    Array.from(container.querySelectorAll('[data-score]')).forEach(function(input){
-      var b = input.getAttribute('data-brand');
-      var q = input.getAttribute('data-question');
-      if (!b || !q) return;
-      var v = input.value;
-      if (v === '') return;
-      var n = Number(v);
-      if (Number.isNaN(n)) return;
-      (scores[b] || (scores[b] = {}))[q] = n;
+    // Rows
+    questions.forEach((q, rowIdx) => {
+      const row = document.createElement('div');
+      row.className = 'dq-row';
+      row.innerHTML = `<div class="dq-row-label">${q}</div>`;
+
+      // Unsorted column
+      const uns = document.createElement('div');
+      uns.className = 'dq-unsorted';
+      const ulUns = document.createElement('ul');
+      ulUns.className = 'dq-card-list';
+      brands.forEach(b => {
+        const li = document.createElement('li');
+        li.dataset.brand = b.name;
+        li.innerHTML = `<img src="${b.img}" alt="${b.name}"><div>${b.name}</div><div class="dq-badge"></div>`;
+        ulUns.appendChild(li);
+      });
+      uns.appendChild(ulUns);
+      row.appendChild(uns);
+
+      // Likert columns
+      scaleLabels.forEach(() => {
+        const col = document.createElement('div');
+        col.className = 'dq-col';
+        col.innerHTML = '<ul class="dq-card-list"></ul>';
+        row.appendChild(col);
+      });
+
+      board.appendChild(row);
     });
 
-    var notes = {};
-    Array.from(container.querySelectorAll('[data-note]')).forEach(function(ta){
-      var b = ta.getAttribute('data-brand');
-      if (!b) return;
-      var v = ta.value;
-      if (!v) return;
-      (notes[b] || (notes[b] = {})).all = v;
+    container.appendChild(board);
+
+    // Drag-and-drop (row-locked)
+    board.querySelectorAll('.dq-row').forEach((row, rowIdx) => {
+      const group = `row-${rowIdx}`;
+      row.querySelectorAll('ul.dq-card-list').forEach(ul => {
+        ul.dataset.row = group;
+        new Sortable(ul, {
+          group: { name: group, pull: true, put: true },
+          animation: 150,
+          onMove: e => e.from.dataset.row === e.to.dataset.row,
+          onSort: updateRanks
+        });
+      });
     });
 
-    return { order: order, scores: scores, notes: notes };
-  }
+    // Ranking logic
+    function updateRanks() {
+      board.querySelectorAll('.dq-row').forEach(row => {
+        const cardBuckets = [...row.querySelectorAll('ul.dq-card-list')];
+        const ranked = [];
 
-  window.initDqRankBoard = function(container, options){
-    var opts = options || {};
-    var api = origInit(container, opts);   // call the original, unmodified
+        cardBuckets.forEach((ul, i) => {
+          if (i === 0) {
+            ul.querySelectorAll('.dq-badge').forEach(b => b.textContent = '');
+            return;
+          }
+          const scale = scaleLabels[i - 1];
+          [...ul.children].forEach((li, pos) => {
+            ranked.push({ li, score: weight[scale] * 10 + (ul.children.length - pos) });
+          });
+        });
 
-    // Debounced emitter -> options.onChange(state)
-    var emit = debounce(function(){
-      if (typeof opts.onChange === 'function') {
-        try { opts.onChange(buildState(container)); } catch(e){ console.warn('[RB shim] onChange error', e); }
+        ranked.sort((a, b) => b.score - a.score)
+              .forEach((c, i) => c.li.querySelector('.dq-badge').textContent = i + 1);
+      });
+    }
+
+    // Public API (optional)
+    return {
+      getResultsJson() {
+        const out = [];
+        board.querySelectorAll('.dq-row').forEach((row, rIdx) => {
+          const q = questions[rIdx];
+          row.querySelectorAll('.dq-col').forEach((col, cIdx) => {
+            const scale = scaleLabels[cIdx];
+            [...col.querySelectorAll('li')].forEach((li, pos) => {
+              out.push({
+                question: q,
+                brand: li.dataset.brand,
+                scale,
+                rank: pos + 1,
+                value: weight[scale]
+              });
+            });
+          });
+        });
+        return out;
       }
-    }, 120);
-
-    // Wire typical interactions (non-invasive: listen only)
-    container.addEventListener('input', function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.matches('[data-score]') || t.matches('[data-note]')) emit();
-    });
-    container.addEventListener('change', function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.matches('[data-score]') || t.matches('[data-note]')) emit();
-    });
-
-    // If Sortable is used, also emit after drags (listen for common event)
-    container.addEventListener('sortupdate', emit); // some libs dispatch this
-    // If your original creates Sortable on an element, fallback to a generic mouseup as last resort:
-    container.addEventListener('mouseup', function(e){
-      var t = e.target;
-      if (t && (t.classList && t.classList.contains('drag-handle'))) emit();
-    });
-
-    // Emit once so the host can capture initial state
-    try { emit(); } catch(_) {}
-
-    // Return original API, plus getState()
-    var shimApi = api || {};
-    shimApi.getState = function(){ return buildState(container); };
-    return shimApi;
+    };
   };
 })();
-
-// ---- minimal global export (append to the very end of the file) ----
-if (typeof window !== 'undefined' && typeof initDqRankBoard === 'function') {
-  window.initDqRankBoard = initDqRankBoard;
-}
