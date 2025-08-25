@@ -113,14 +113,15 @@
           const q = questions[rIdx];
           row.querySelectorAll('.dq-col').forEach((col, cIdx) => {
             const scale = scaleLabels[cIdx];
-            const scaleVal = weight[scale];   // numeric value
-            [...col.querySelectorAll('li')].forEach((li, pos) => {
+            Array.from(col.querySelectorAll('li')).forEach((li) => {
+              const badge = li.querySelector('.dq-badge');
+              const globalRank = parseInt(badge && badge.textContent, 10);
               out.push({
                 question: q,
                 brand: li.dataset.brand,
                 scale,
-                rank: pos + 1,
-                value: scaleVal
+                rank: Number.isFinite(globalRank) ? globalRank : null,
+                value: weight[scale]
               });
             });
           });

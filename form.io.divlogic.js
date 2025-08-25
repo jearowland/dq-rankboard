@@ -1,11 +1,20 @@
 (function () {
-  // Run once per render of this Content/HTML component
-  if (instance._rbInit) return;
-  instance._rbInit = true;
+  // prevent concurrent runs; set the success guard only at the end
+  if (instance._rbInit || instance._rbInitInProgress) return;
+  instance._rbInitInProgress = true;
 
-  // --- tiny helpers ---
-  function loadOnce(id, mk) {
-    return new Promise(function(resolve, reject){
+  // helpers
+  function waitFor(fn, tries=30, delay=100){
+    return new Promise((res, rej)=>{
+      (function loop(n){
+        try { if (fn()) return res(true); } catch(_){}
+        if (n<=0) return rej(new Error('timeout'));
+        setTimeout(()=>loop(n-1), delay);
+      })(tries);
+    });
+  }
+  function loadOnce(id, mk){
+    return new Promise((resolve, reject)=>{
       if (document.getElementById(id)) return resolve();
       var el = mk(); el.id = id;
       el.onload = function(){ resolve(); };
@@ -13,27 +22,22 @@
       document.head.appendChild(el);
     });
   }
-  function waitFor(test, tries, delay) {
-    return new Promise(function(resolve, reject){
-      (function loop(n){
-        try { if (test()) return resolve(true); } catch (e) {}
-        if (n <= 0) return reject(new Error('timeout'));
-        setTimeout(function(){ loop(n-1); }, delay);
-      })(tries);
-    });
-  }
   function debounce(fn, wait){ var t; return function(){ clearTimeout(t); var a=arguments; t=setTimeout(function(){ fn.apply(null,a); }, wait); }; }
-  function safeStringify(v){ try { return JSON.stringify(v); } catch(e){ return ''; } }
-
-  // --- 0) locate form + host ---
-  var form = instance.root;
-  var host = instance.element && instance.element.querySelector('#rankBoardHost');
-  if (!form) { console.error('[RB] missing form instance'); return; }
-  if (!host) { console.error('[RB] #rankBoardHost not found inside this Content component'); return; }
+  function safeStringify(v){ try { return JSON.stringify(v); } catch(_) { return ''; } }
 
   (async function run(){
     try {
-      // --- 1) deps: CSS + Sortable + rankboard JS ---
+      // 0) wait for form + host; only warn if truly missing
+      await waitFor(function(){
+        return instance && instance.root && instance.element &&
+               instance.element.querySelector('#rankBoardHost');
+      }, 30, 100);
+
+      var form = instance.root;
+      var host = instance.element.querySelector('#rankBoardHost');
+      if (!form || !host) { console.warn('[RB] host/form not ready after waiting — skipping init'); return; }
+
+      // 1) deps
       await loadOnce('dq-rankboard-css', function(){
         var l = document.createElement('link');
         l.rel = 'stylesheet';
@@ -52,7 +56,7 @@
       });
       await waitFor(function(){ return typeof window.initDqRankBoard === 'function'; }, 30, 100);
 
-      // --- 2) read Brands / Questions from Edit Grids ---
+      // 2) data from grids
       var brandsCmp = form.getComponent('brands');
       var questionsCmp = form.getComponent('questions');
       var brandsRaw = brandsCmp ? (brandsCmp.getValue ? brandsCmp.getValue() : brandsCmp.dataValue) : [];
@@ -63,26 +67,25 @@
       });
       var questions = (Array.isArray(questionsRaw) ? questionsRaw : []).map(function(q){ return norm(q).text; });
 
-      // --- 3) hidden sink for persistence ---
+      // 3) hidden sink (persistence)
       var sink = form.getComponent('rankBoardData');
       function setSink(val){
         if (!sink) return;
-        try { if (typeof sink.setValue === 'function') return sink.setValue(val); } catch(e){}
-        try { if (typeof sink.updateValue === 'function') return sink.updateValue(val); } catch(e){}
-        try { sink.dataValue = val; if (typeof sink.triggerChange === 'function') sink.triggerChange({ modified: true }); } catch(e){}
+        try { if (typeof sink.setValue === 'function') return sink.setValue(val); } catch(_){}
+        try { if (typeof sink.updateValue === 'function') return sink.updateValue(val); } catch(_){}
+        try { sink.dataValue = val; if (typeof sink.triggerChange === 'function') sink.triggerChange({ modified:true }); } catch(_){}
       }
       function getSink(){
         if (!sink) return undefined;
-        try { if (typeof sink.getValue === 'function') return sink.getValue(); } catch(e){}
+        try { if (typeof sink.getValue === 'function') return sink.getValue(); } catch(_){}
         return sink.dataValue;
       }
 
-      // --- 4) restore saved state, if any ---
+      // 4) restore + polite save
       var initialState = (sink ? getSink() : null) ||
                          (form.submission && form.submission.data && form.submission.data.rankBoardData) ||
                          null;
 
-      // --- 5) init board, save back politely ---
       var initializing = true;
       var lastSaved = safeStringify(initialState || []);
       var debouncedSave = debounce(function(state){
@@ -104,13 +107,10 @@
           'Would you purchase from this brand again?'
         ],
         initialState: initialState,
-        onChange: function(state){
-          if (initializing) return;
-          debouncedSave(state);
-        }
+        onChange: function(state){ if (!initializing) debouncedSave(state); }
       });
 
-      // --- 6) seed hidden field once so it's never empty ---
+      // 5) seed once so submission is never empty
       if (sink) {
         var current = getSink();
         var empty = (current == null) || (Array.isArray(current) && current.length === 0);
@@ -124,9 +124,12 @@
       }
 
       setTimeout(function(){ initializing = false; }, 100);
+      instance._rbInit = true;                 // ✅ mark success
+      instance._rbInitInProgress = false;      // clear in-progress
       console.log('[RB] ✅ RankBoard initialised');
     } catch (e) {
-      console.error('[RB] ❌ init failed', e);
+      instance._rbInitInProgress = false;      // allow retry on next render
+      console.warn('[RB] init skipped/failed:', e && e.message ? e.message : e);
     }
   })();
 })();
