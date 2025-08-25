@@ -83,3 +83,35 @@
     return shimApi;
   };
 })();
+
+/* ---- minimal global export (append to end of dq-rankboard.js) ---- */
+
+// If initDqRankBoard is defined in this scope, expose it for non-module usage
+try {
+  if (typeof window !== 'undefined'
+      && typeof window.initDqRankBoard !== 'function'
+      && typeof initDqRankBoard === 'function') {
+    window.initDqRankBoard = initDqRankBoard;
+    // console.log('[RB] global initDqRankBoard attached');
+  }
+} catch (_) { /* no-op */ }
+
+// If you also build as ESM, this keeps module consumers working too.
+// (Safe to include even if you’re not using modules.)
+try {
+  // eslint-disable-next-line no-undef
+  if (typeof export !== 'undefined' || typeof exports !== 'undefined') {
+    // no-op: CommonJS handled by bundler
+  }
+} catch (_) { /* no-op */ }
+
+// Optional: UMD-style fallback if your bundler hoists differently
+(function (root) {
+  try {
+    if (typeof root !== 'undefined'
+        && typeof root.initDqRankBoard !== 'function'
+        && typeof initDqRankBoard === 'function') {
+      root.initDqRankBoard = initDqRankBoard;
+    }
+  } catch (_) {}
+})(typeof window !== 'undefined' ? window : this);
