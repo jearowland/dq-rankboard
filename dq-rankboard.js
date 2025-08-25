@@ -1,14 +1,3 @@
-// Inject CSS programmatically
-(function() {
-  const cssId = 'dq-rankboard-css';
-  if (!document.getElementById(cssId)) {
-    const link = document.createElement('link');
-    link.id = cssId;
-    link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/gh/jearowland/dq-rankboard@main/dq-rankboard.css';  // Your GitHub CDN
-    document.head.appendChild(link);
-  }
-})();
 // @ts-nocheck
 function initDqRankBoard(container, config) {
       const { brands, questions, scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"], scaleWeight } = config;
