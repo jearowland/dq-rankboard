@@ -1,0 +1,55 @@
+:root{
+      --dq-border:#ccc;
+      --dq-bg:#f9f9f9;
+      --dq-badge:#FF2B7D;
+    }
+    body{font-family:Arial,sans-serif;margin:20px}
+    h2{font-size:24px;margin-bottom:16px}
+
+    .dq-board{display:flex;flex-direction:column;gap:12px;margin-top:30px}
+    .dq-header-row,.dq-row{display:flex;gap:12px;align-items:flex-start}
+
+    .dq-header-spacer{flex:0 0 300px}
+    .dq-header-unsorted{flex:0 0 200px;font-weight:bold;text-align:center}
+    .dq-header-col{flex:1;min-width:150px;font-weight:bold;text-align:center}
+    .dq-row-label{flex:0 0 300px;font-weight:bold}
+
+    .dq-unsorted,.dq-col{
+      border:1px solid var(--dq-border);
+      border-radius:6px;
+      padding:8px;
+      background:var(--dq-bg);
+    }
+    .dq-unsorted{flex:0 0 200px}
+    .dq-col{flex:1;min-width:150px}
+
+    ul.dq-card-list{list-style:none;padding:0;min-height:60px;margin:0}
+    ul.dq-card-list li{
+      border:1px solid #ddd;
+      border-radius:4px;
+      background:#fff;
+      margin-bottom:8px;
+      padding:8px;
+      text-align:center;
+      position:relative;
+      font-size:14px;
+    }
+    ul.dq-card-list img{
+      width:50px;
+      display:block;
+      margin:0 auto 6px;
+    }
+    .dq-badge{
+      position:absolute;
+      top:2px;
+      right:2px;
+      background:var(--dq-badge);
+      color:#fff;
+      border-radius:50%;
+      width:40px;
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+    }
