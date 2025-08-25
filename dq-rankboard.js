@@ -2,18 +2,19 @@
   // Avoid redefining if script is loaded multiple times
   if (window.initDqRankBoard) return;
 
-  // Expose a single global function
   window.initDqRankBoard = function initDqRankBoard(container, config) {
     const {
       brands,
       questions,
       scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
-      scaleWeight
+      scaleWeight,
+      onChange,       // optional callback
+      initialState    // optional restore array
     } = config;
 
     const weight = scaleWeight || Object.fromEntries(scaleLabels.map((l, i) => [l, i + 1]));
 
-    // Clear previous content if any
+    // Clear previous content
     container.innerHTML = '';
     const board = document.createElement('div');
     board.className = 'dq-board';
@@ -26,7 +27,7 @@
     </div>`;
 
     // Rows
-    questions.forEach((q, rowIdx) => {
+    questions.forEach((q) => {
       const row = document.createElement('div');
       row.className = 'dq-row';
       row.innerHTML = `<div class="dq-row-label">${q}</div>`;
@@ -67,7 +68,10 @@
           group: { name: group, pull: true, put: true },
           animation: 150,
           onMove: e => e.from.dataset.row === e.to.dataset.row,
-          onSort: updateRanks
+          onSort: () => {
+            updateRanks();
+            triggerChange();
+          }
         });
       });
     });
@@ -94,27 +98,74 @@
       });
     }
 
-    // Public API (optional)
-    return {
+    // Emit state via onChange
+    function triggerChange() {
+      if (typeof onChange === 'function') {
+        onChange(api.getResultsJson());
+      }
+    }
+
+    // Public API
+    const api = {
       getResultsJson() {
         const out = [];
         board.querySelectorAll('.dq-row').forEach((row, rIdx) => {
           const q = questions[rIdx];
           row.querySelectorAll('.dq-col').forEach((col, cIdx) => {
             const scale = scaleLabels[cIdx];
-            [...col.querySelectorAll('li')].forEach((li, pos) => {
+            Array.from(col.querySelectorAll('li')).forEach((li) => {
+              const badge = li.querySelector('.dq-badge');
+              const globalRank = parseInt(badge && badge.textContent, 10);
               out.push({
                 question: q,
                 brand: li.dataset.brand,
                 scale,
-                rank: pos + 1,
+                rank: Number.isFinite(globalRank) ? globalRank : null,
                 value: weight[scale]
               });
             });
           });
         });
         return out;
+      },
+      setState(state) {
+        restoreState(state);
+        updateRanks();
+        triggerChange();
       }
     };
+
+    // Restore from initialState
+    function restoreState(state) {
+      if (!state || !Array.isArray(state)) return;
+      state.forEach(item => {
+        const { question, brand, scale } = item;
+        const rowIdx = questions.indexOf(question);
+        if (rowIdx === -1) return;
+
+        const row = board.querySelectorAll('.dq-row')[rowIdx];
+        const li = row.querySelector(`li[data-brand="${brand}"]`);
+        if (!li) return;
+
+        let targetUl;
+        if (scaleLabels.includes(scale)) {
+          const colIdx = scaleLabels.indexOf(scale) + 1; // +1 skips unsorted
+          targetUl = row.querySelectorAll('ul.dq-card-list')[colIdx];
+        } else {
+          targetUl = row.querySelector('ul.dq-card-list');
+        }
+        if (targetUl) targetUl.appendChild(li);
+      });
+    }
+
+    if (initialState) {
+      restoreState(initialState);
+      updateRanks();
+    }
+
+    // Emit initial state
+    triggerChange();
+
+    return api;
   };
 })();
