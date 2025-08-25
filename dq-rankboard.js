@@ -2,20 +2,19 @@
   // Avoid redefining if script is loaded multiple times
   if (window.initDqRankBoard) return;
 
-  // Expose a single global function
   window.initDqRankBoard = function initDqRankBoard(container, config) {
     const {
       brands,
       questions,
       scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
       scaleWeight,
-      onChange,       // 🔹 optional callback
-      initialState    // 🔹 optional restore object
+      onChange,       // optional callback
+      initialState    // optional restore array
     } = config;
 
     const weight = scaleWeight || Object.fromEntries(scaleLabels.map((l, i) => [l, i + 1]));
 
-    // Clear previous content if any
+    // Clear previous content
     container.innerHTML = '';
     const board = document.createElement('div');
     board.className = 'dq-board';
@@ -71,7 +70,7 @@
           onMove: e => e.from.dataset.row === e.to.dataset.row,
           onSort: () => {
             updateRanks();
-            triggerChange();   // 🔹 emit change
+            triggerChange();
           }
         });
       });
@@ -99,7 +98,7 @@
       });
     }
 
-    // 🔹 Emit state via onChange
+    // Emit state via onChange
     function triggerChange() {
       if (typeof onChange === 'function') {
         onChange(api.getResultsJson());
@@ -114,13 +113,14 @@
           const q = questions[rIdx];
           row.querySelectorAll('.dq-col').forEach((col, cIdx) => {
             const scale = scaleLabels[cIdx];
+            const scaleVal = weight[scale];   // numeric value
             [...col.querySelectorAll('li')].forEach((li, pos) => {
               out.push({
                 question: q,
                 brand: li.dataset.brand,
                 scale,
                 rank: pos + 1,
-                value: weight[scale]
+                value: scaleVal
               });
             });
           });
@@ -134,7 +134,7 @@
       }
     };
 
-    // 🔹 Restore from initialState if provided
+    // Restore from initialState
     function restoreState(state) {
       if (!state || !Array.isArray(state)) return;
       state.forEach(item => {
@@ -148,11 +148,9 @@
 
         let targetUl;
         if (scaleLabels.includes(scale)) {
-          // scale column index (skip unsorted)
-          const colIdx = scaleLabels.indexOf(scale) + 1;
+          const colIdx = scaleLabels.indexOf(scale) + 1; // +1 skips unsorted
           targetUl = row.querySelectorAll('ul.dq-card-list')[colIdx];
         } else {
-          // fallback to unsorted
           targetUl = row.querySelector('ul.dq-card-list');
         }
         if (targetUl) targetUl.appendChild(li);
