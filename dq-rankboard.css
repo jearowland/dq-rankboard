@@ -6,6 +6,10 @@
   /* Bonorigo brand colors */
   --bonorigo-pink:#EC008C;
   --bonorigo-plum:#922B5D;
+
+  /* locked widths */
+  --dq-label-w:22%;
+  --dq-unsorted-w:16%;
 }
 
 *,
@@ -22,7 +26,7 @@ body{font-family:Arial,sans-serif;margin:20px}
   margin-top:24px;
   width:100%;
   max-width:100%;
-  overflow:hidden; /* prevent escaping parent */
+  overflow:hidden;
 }
 
 /* SECTIONS */
@@ -46,9 +50,9 @@ body{font-family:Arial,sans-serif;margin:20px}
 }
 
 .dq-subdomain-header{
-  font-size:18px;                 /* slightly larger than question label */
+  font-size:18px;
   font-weight:bold;
-  color:var(--bonorigo-pink);     /* Bonorigo pink */
+  color:var(--bonorigo-pink);
   margin:14px 0 8px 0;
 }
 
@@ -61,32 +65,33 @@ body{font-family:Arial,sans-serif;margin:20px}
   width:100%;
 }
 
-/* RESPONSIVE LAYOUT USING PERCENTAGES
-   - Row label ~22%
-   - Unsorted   ~16%
-   - Remaining space divided among scale columns
-*/
+/* RESPONSIVE LAYOUT USING PERCENTAGES */
 .dq-header-spacer,
 .dq-row-label{
-  flex:0 0 22%;
-  max-width:22%;
+  flex:0 0 var(--dq-label-w);
+  max-width:var(--dq-label-w);
 }
 
 .dq-header-unsorted,
 .dq-unsorted{
-  flex:0 0 16%;
-  max-width:16%;
+  flex:0 0 var(--dq-unsorted-w);
+  max-width:var(--dq-unsorted-w);
 }
 
 .dq-header-col,
 .dq-col{
-  flex:1 1 0;           /* share remaining width equally */
-  min-width:0;          /* allow shrinking instead of overflowing */
+  flex:1 1 0;
+  min-width:0;
 }
 
-/* HEADER TEXT */
+/* Make header cells use the SAME box model as body columns
+   → keeps widths visually locked with borders & padding */
 .dq-header-unsorted,
 .dq-header-col{
+  border:1px solid var(--dq-border);
+  border-radius:6px;
+  padding:8px;
+  background:var(--dq-bg);
   font-weight:bold;
   text-align:center;
 }
@@ -127,7 +132,7 @@ ul.dq-card-list li{
   line-height:1.25;
 }
 
-/* images left aligned above text (block style) */
+/* image left, text below (no flex) */
 ul.dq-card-list img{
   width:40px;
   height:auto;
@@ -143,12 +148,12 @@ ul.dq-card-list img{
   background:var(--dq-badge);
   color:#fff;
   border-radius:50%;
-  width:24px;          /* smaller badge size */
+  width:24px;           /* smaller badge size */
   height:24px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:12px;      /* smaller font size */
+  font-size:12px;       /* smaller font size */
 }
 
 /* spacing for the repeated headers */
