@@ -70,6 +70,7 @@ body{font-family:Arial,sans-serif;margin:20px}
 .dq-header-spacer,
 .dq-row-label{
   min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
+  max-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
 }
 
 .dq-header-unsorted,
