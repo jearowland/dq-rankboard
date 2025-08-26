@@ -15,7 +15,7 @@
 }
 
 /* Headings you can apply to Content components via Custom CSS Class */
-.dq-form .dq-h1,
+.dq-form h1,
 .dq-form .dq-domain-header {
   font-size: 20px;           /* your preferred H1 size */
   font-weight: 600;
@@ -25,7 +25,7 @@
   padding-bottom: 4px;
 }
 
-.dq-form .dq-h2,
+.dq-form h2,
 .dq-form .dq-subdomain-heading {
   font-size: 16px;           /* subordinate heading */
   font-weight: 600;
