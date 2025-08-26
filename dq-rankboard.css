@@ -1,55 +1,170 @@
 :root{
-      --dq-border:#ccc;
-      --dq-bg:#f9f9f9;
-      --dq-badge:#FF2B7D;
-    }
-    body{font-family:Arial,sans-serif;margin:20px}
-    h2{font-size:24px;margin-bottom:16px}
+  --dq-border:#ccc;
+  --dq-bg:#f9f9f9;
+  --dq-badge:#FF2B7D;
 
-    .dq-board{display:flex;flex-direction:column;gap:12px;margin-top:30px}
-    .dq-header-row,.dq-row{display:flex;gap:12px;align-items:flex-start}
+  /* Bonorigo brand colors */
+  --bonorigo-pink:#EC008C;
+  --bonorigo-plum:#922B5D;
 
-    .dq-header-spacer{flex:0 0 300px}
-    .dq-header-unsorted{flex:0 0 200px;font-weight:bold;text-align:center}
-    .dq-header-col{flex:1;min-width:150px;font-weight:bold;text-align:center}
-    .dq-row-label{flex:0 0 300px;font-weight:bold}
+  /* locked widths */
+  --dq-label-w:20%;     /* tightened from 22% */
+  --dq-unsorted-w:12%;
+  --dq-col-min:12%;   /* NEW: shared min width for unsorted + scale cols (and headers) */
+}
 
-    .dq-unsorted,.dq-col{
-      border:1px solid var(--dq-border);
-      border-radius:6px;
-      padding:8px;
-      background:var(--dq-bg);
-    }
-    .dq-unsorted{flex:0 0 200px}
-    .dq-col{flex:1;min-width:150px}
+*,
+*::before,
+*::after { box-sizing: border-box; }
 
-    ul.dq-card-list{list-style:none;padding:0;min-height:60px;margin:0}
-    ul.dq-card-list li{
-      border:1px solid #ddd;
-      border-radius:4px;
-      background:#fff;
-      margin-bottom:8px;
-      padding:8px;
-      text-align:center;
-      position:relative;
-      font-size:14px;
-    }
-    ul.dq-card-list img{
-      width:50px;
-      display:block;
-      margin:0 auto 6px;
-    }
-    .dq-badge{
-      position:absolute;
-      top:2px;
-      right:2px;
-      background:var(--dq-badge);
-      color:#fff;
-      border-radius:50%;
-      width:40px;
-      height:40px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:16px;
-    }
+body{font-family:Arial,sans-serif;margin:20px}
+
+/* BOARD WRAPPER */
+.dq-board{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:24px;
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+/* SECTIONS */
+.dq-domain-section,
+.dq-subdomain-section{
+  width:100%;
+  max-width:100%;
+}
+
+/* DOMAIN / SUBDOMAIN HEADERS */
+.dq-domain-header{
+  background:var(--bonorigo-plum);
+  color:#fff;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  padding:10px 12px;
+  border-radius:8px;
+  margin:18px 0 10px 0;
+  width:100%;
+}
+
+.dq-subdomain-header{
+  font-size:18px;
+  font-weight:bold;
+  color:var(--bonorigo-pink);
+  margin:14px 0 8px 0;
+}
+
+/* GRID: header row + question rows */
+.dq-header-row,
+.dq-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  width:100%;
+}
+
+/* RESPONSIVE LAYOUT USING PERCENTAGES */
+.dq-header-spacer,
+.dq-row-label{
+  min-width:var(--dq-label-w);  /* 🔒 match scale column minimums */
+  max-width:var(--dq-label-w);  /* 🔒 match scale column minimums */
+}
+
+.dq-header-unsorted,
+.dq-unsorted{
+  flex:0 0 var(--dq-col-min);
+  min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
+  max-width:133px;
+  
+}
+
+.dq-header-col,
+.dq-col{
+  flex:1 1 var(--dq-col-min);   /* grow/shrink but respect the same minimum */
+  min-width:var(--dq-col-min);  /* 🔒 shared min width */
+  max-width:133px;
+}
+
+/* HEADER CELLS – plain text only (no box) */
+.dq-header-unsorted,
+.dq-header-col{
+  font-weight:bold;
+  text-align:center;
+  padding:4px 0;
+  background:none;
+  border:none;
+}
+
+/* QUESTION LABEL */
+.dq-row-label{
+  font-weight:bold;
+  line-height:1.3;
+  font-size:15px;
+}
+
+/* DROP ZONES (interactive cells) */
+.dq-unsorted{
+  border:1px solid var(--dq-border);
+  border-radius:6px;
+  padding:8px;
+  background:darkgrey;
+  margin-bottom: 8px;
+}
+.dq-col{
+  border:1px solid var(--dq-border);
+  border-radius:6px;
+  padding:8px;
+  background:var(--dq-bg);
+  margin-bottom: 8px;
+}
+
+/* LISTS / CARDS */
+ul.dq-card-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  min-height:56px;
+}
+
+ul.dq-card-list li{
+  position:relative;
+  border:1px solid #ddd;
+  border-radius:6px;
+  background:#fff;
+  padding:8px 10px;
+  text-align:left;
+  font-size:12px;
+  line-height:1.25;
+}
+
+/* image left, text below */
+ul.dq-card-list img{
+  width:40px;
+  height:auto;
+  display:block;
+  margin-bottom:4px;
+}
+
+/* RANK BADGE */
+.dq-badge{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:var(--dq-badge);
+  color:#fff;
+  border-radius:50%;
+  width:24px;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+}
+
+/* spacing for repeated headers */
+.dq-subdomain-section > .dq-header-row{
+  margin-bottom:8px;
+}
