@@ -1,4 +1,4 @@
-/* ========= DQ Rankboard – Form styles (scoped) ========= */
+/* ===== DQ Rankboard – Form styles (scoped) ===== */
 .dq-form {
   --dq-black: #000000;
   --dq-grey: #6D6E71;
@@ -10,14 +10,17 @@
 
   color: var(--dq-charcoal);
   font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 11px;           /* body size per your guide */
-  line-height: 1.15;         /* per your guide */
+  font-size: 11px;
+  line-height: 1.15;
 }
 
-/* Headings inside Content (htmlelement) components */
-.dq-form .formio-component-htmlelement h1,
-.dq-form .dq-domain-header {
-  font-size: 20px !important;           /* your preferred H1 size */
+/* ---------- Headings inside WYSIWYG Content ---------- */
+/* TEMP debug: uncomment to verify selector matches */
+/* .dq-form .formio-component-content .formio-component-htmlelement h2 { outline: 2px dashed red !important; } */
+
+.formio-form.dq-form .formio-component-content .formio-component-htmlelement h1,
+.formio-form.dq-form .dq-domain-header {
+  font-size: 20px !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
   margin: 20px 0 8px !important;
@@ -25,30 +28,26 @@
   padding-bottom: 4px !important;
 }
 
-.dq-form .formio-component-htmlelement h2,
-.dq-form .dq-subdomain-heading {
-  font-size: 16px !important;           /* subordinate heading */
+.formio-form.dq-form .formio-component-content .formio-component-htmlelement h2,
+.formio-form.dq-form .dq-subdomain-heading {
+  font-size: 16px !important;
   font-weight: 600 !important;
   line-height: 1.3 !important;
   margin: 14px 0 6px !important;
   opacity: 0.9 !important;
 }
 
-.dq-form .formio-component-htmlelement h3 {
+.formio-form.dq-form .formio-component-content .formio-component-htmlelement h3 {
   font-size: 14px !important;
   font-weight: 600 !important;
   margin: 12px 0 6px !important;
 }
 
-.dq-form .dq-body {
-  margin: 6px 0 12px;
-}
+/* Paragraph helpers (optional) */
+.dq-form .dq-body { margin: 6px 0 12px; }
+.dq-form .dq-muted { opacity: 0.75; }
 
-.dq-form .dq-muted {
-  opacity: 0.75;
-}
-
-/* Section card (apply to Panel components via Custom CSS Class) */
+/* ---------- Sections / Panels ---------- */
 .dq-form .dq-section {
   background: var(--dq-bg);
   border: 1px solid var(--dq-border);
@@ -58,7 +57,7 @@
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 
-/* Divider (use a Content component with no text + class dq-divider) */
+/* Divider */
 .dq-form .dq-divider {
   height: 1px;
   background: currentColor;
@@ -66,14 +65,13 @@
   margin: 12px 0;
 }
 
-/* Buttons (add Custom CSS Class "dq-btn dq-btn-primary" to Button components) */
+/* ---------- Buttons ---------- */
 .dq-form .dq-btn {
   border-radius: 10px;
   font-weight: 600;
   padding: 8px 14px;
   border: 1px solid transparent;
 }
-
 .dq-form .dq-btn-primary {
   background: var(--dq-pink);
   border-color: var(--dq-pink);
@@ -85,7 +83,7 @@
   box-shadow: 0 0 0 3px rgba(236,0,140,.2);
 }
 
-/* Inputs (applies to all inputs inside this form) */
+/* ---------- Inputs ---------- */
 .dq-form input[type="text"],
 .dq-form input[type="number"],
 .dq-form input[type="email"],
@@ -107,7 +105,7 @@
   box-shadow: 0 0 0 3px rgba(90,31,93,.15);
 }
 
-/* Labels and help text (keeps contrast high) */
+/* ---------- Labels & help text ---------- */
 .dq-form .control-label,
 .dq-form label {
   font-weight: 600;
@@ -118,7 +116,7 @@
   font-size: 10px;
 }
 
-/* Spacing utilities you can mix into Custom CSS Class fields */
+/* ---------- Spacing utilities ---------- */
 .dq-form .dq-mt-0 { margin-top: 0 !important; }
 .dq-form .dq-mt-4 { margin-top: 4px !important; }
 .dq-form .dq-mt-8 { margin-top: 8px !important; }
@@ -128,7 +126,7 @@
 .dq-form .dq-mb-8 { margin-bottom: 8px !important; }
 .dq-form .dq-mb-12 { margin-bottom: 12px !important; }
 
-/* Optional: accent elements (badges, notes) */
+/* ---------- Accents ---------- */
 .dq-form .dq-badge {
   display: inline-block;
   font-size: 10px;
