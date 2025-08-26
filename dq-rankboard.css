@@ -84,16 +84,14 @@ body{font-family:Arial,sans-serif;margin:20px}
   min-width:0;
 }
 
-/* Make header cells use the SAME box model as body columns
-   → keeps widths visually locked with borders & padding */
+/* HEADER CELLS – plain text only (no box) */
 .dq-header-unsorted,
 .dq-header-col{
-  border:1px solid var(--dq-border);
-  border-radius:6px;
-  padding:8px;
-  background:var(--dq-bg);
   font-weight:bold;
   text-align:center;
+  padding:4px 0;
+  background:none;
+  border:none;
 }
 
 /* QUESTION LABEL */
@@ -103,7 +101,7 @@ body{font-family:Arial,sans-serif;margin:20px}
   font-size:13px;
 }
 
-/* DROP ZONES */
+/* DROP ZONES (interactive cells) */
 .dq-unsorted,
 .dq-col{
   border:1px solid var(--dq-border);
@@ -126,13 +124,13 @@ ul.dq-card-list li{
   border-radius:6px;
   background:#fff;
   margin-bottom:8px;
-  padding:8px 10px;      /* reduced right padding */
+  padding:8px 10px;
   text-align:left;
-  font-size:12px;        /* smaller text size */
+  font-size:12px;
   line-height:1.25;
 }
 
-/* image left, text below (no flex) */
+/* image left, text below */
 ul.dq-card-list img{
   width:40px;
   height:auto;
@@ -148,15 +146,15 @@ ul.dq-card-list img{
   background:var(--dq-badge);
   color:#fff;
   border-radius:50%;
-  width:24px;           /* smaller badge size */
+  width:24px;
   height:24px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:12px;       /* smaller font size */
+  font-size:12px;
 }
 
-/* spacing for the repeated headers */
+/* spacing for repeated headers */
 .dq-subdomain-section > .dq-header-row{
   margin-bottom:8px;
 }
