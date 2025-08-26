@@ -58,4 +58,84 @@
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 
-/* Divider (use a Conte*
+/* Divider (use a Content component with no text + class dq-divider) */
+.dq-form .dq-divider {
+  height: 1px;
+  background: currentColor;
+  opacity: 0.2;
+  margin: 12px 0;
+}
+
+/* Buttons (add Custom CSS Class "dq-btn dq-btn-primary" to Button components) */
+.dq-form .dq-btn {
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+}
+
+.dq-form .dq-btn-primary {
+  background: var(--dq-pink);
+  border-color: var(--dq-pink);
+  color: #fff;
+}
+.dq-form .dq-btn-primary:hover,
+.dq-form .dq-btn-primary:focus {
+  filter: brightness(.95);
+  box-shadow: 0 0 0 3px rgba(236,0,140,.2);
+}
+
+/* Inputs (applies to all inputs inside this form) */
+.dq-form input[type="text"],
+.dq-form input[type="number"],
+.dq-form input[type="email"],
+.dq-form input[type="tel"],
+.dq-form textarea,
+.dq-form select {
+  font-size: 11px;
+  line-height: 1.15;
+  color: var(--dq-charcoal);
+  border: 1px solid var(--dq-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.dq-form input:focus,
+.dq-form textarea:focus,
+.dq-form select:focus {
+  outline: none;
+  border-color: var(--dq-purple);
+  box-shadow: 0 0 0 3px rgba(90,31,93,.15);
+}
+
+/* Labels and help text (keeps contrast high) */
+.dq-form .control-label,
+.dq-form label {
+  font-weight: 600;
+  color: var(--dq-charcoal);
+}
+.dq-form .help-block {
+  color: var(--dq-grey);
+  font-size: 10px;
+}
+
+/* Spacing utilities you can mix into Custom CSS Class fields */
+.dq-form .dq-mt-0 { margin-top: 0 !important; }
+.dq-form .dq-mt-4 { margin-top: 4px !important; }
+.dq-form .dq-mt-8 { margin-top: 8px !important; }
+.dq-form .dq-mt-12 { margin-top: 12px !important; }
+.dq-form .dq-mb-0 { margin-bottom: 0 !important; }
+.dq-form .dq-mb-4 { margin-bottom: 4px !important; }
+.dq-form .dq-mb-8 { margin-bottom: 8px !important; }
+.dq-form .dq-mb-12 { margin-bottom: 12px !important; }
+
+/* Optional: accent elements (badges, notes) */
+.dq-form .dq-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(236,0,140,.12);
+  color: var(--dq-pink);
+  border: 1px solid rgba(236,0,140,.35);
+}
