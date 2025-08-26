@@ -10,7 +10,7 @@
   /* locked widths */
   --dq-label-w:15%;     /* tightened from 22% */
   --dq-unsorted-w:15%;
-  --dq-col-min:120px;   /* NEW: shared min width for unsorted + scale cols (and headers) */
+  --dq-col-min:15%;   /* NEW: shared min width for unsorted + scale cols (and headers) */
 }
 
 *,
