@@ -45,17 +45,22 @@
       return struct;
     }
 
+    // Create a header row (repeated per subdomain)
+    function createHeaderRow() {
+      const hdr = document.createElement('div');
+      hdr.className = 'dq-header-row';
+      hdr.innerHTML = `
+        <div class="dq-header-spacer"></div>
+        <div class="dq-header-unsorted">Unsorted</div>
+        ${scaleLabels.map(l => `<div class="dq-header-col">${l}</div>`).join('')}
+      `;
+      return hdr;
+    }
+
     // ------- DOM build -------
     container.innerHTML = '';
     const board = document.createElement('div');
     board.className = 'dq-board';
-
-    // Header row (fixed)
-    board.innerHTML = `<div class="dq-header-row">
-      <div class="dq-header-spacer"></div>
-      <div class="dq-header-unsorted">Unsorted</div>
-      ${scaleLabels.map(l => `<div class="dq-header-col">${l}</div>`).join('')}
-    </div>`;
 
     const structure = buildDomainStructure();
 
@@ -88,6 +93,9 @@
           s.textContent = subdomain;
           subSection.appendChild(s);
         }
+
+        // NEW: repeat the column headers for this subdomain board
+        subSection.appendChild(createHeaderRow());
 
         // Rows (questions) under this subdomain
         structure[domain][subdomain].forEach(({ qText, qIndex }) => {
