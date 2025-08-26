@@ -8,8 +8,9 @@
   --bonorigo-plum:#922B5D;
 
   /* locked widths */
-  --dq-label-w:22%;
+  --dq-label-w:20%;     /* tightened from 22% */
   --dq-unsorted-w:16%;
+  --dq-col-min:140px;   /* NEW: shared min width for unsorted + scale cols (and headers) */
 }
 
 *,
@@ -76,12 +77,13 @@ body{font-family:Arial,sans-serif;margin:20px}
 .dq-unsorted{
   flex:0 0 var(--dq-unsorted-w);
   max-width:var(--dq-unsorted-w);
+  min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
 }
 
 .dq-header-col,
 .dq-col{
-  flex:1 1 0;
-  min-width:0;
+  flex:1 1 var(--dq-col-min);   /* grow/shrink but respect the same minimum */
+  min-width:var(--dq-col-min);  /* 🔒 shared min width */
 }
 
 /* HEADER CELLS – plain text only (no box) */
