@@ -64,6 +64,7 @@ body{font-family:Arial,sans-serif;margin:20px}
   gap:12px;
   align-items:flex-start;
   width:100%;
+  padding-bottom: 10px;
 }
 
 /* RESPONSIVE LAYOUT USING PERCENTAGES */
@@ -75,7 +76,6 @@ body{font-family:Arial,sans-serif;margin:20px}
 
 .dq-header-unsorted,
 .dq-unsorted{
-  flex:0 0 var(--dq-unsorted-w);
   max-width:var(--dq-unsorted-w);
   min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
 }
