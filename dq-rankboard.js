@@ -9,7 +9,7 @@
       scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
       scaleWeight,
       onChange,        // optional callback(stateArray)
-      initialState,    // optional restore array [{question, brand, scale, rank?, value?}, ...]
+      initialState,    // optional restore array
       questionMeta,    // optional: array aligned with `questions` -> {domain, subdomain}
       questionMetaMap  // optional: map keyed by question text -> {domain, subdomain}
     } = config;
@@ -94,7 +94,7 @@
           subSection.appendChild(s);
         }
 
-        // NEW: repeat the column headers for this subdomain board
+        // Repeat the column headers for this subdomain board
         subSection.appendChild(createHeaderRow());
 
         // Rows (questions) under this subdomain
@@ -113,8 +113,7 @@
           uns.className = 'dq-unsorted';
           const ulUns = document.createElement('ul');
           ulUns.className = 'dq-card-list';
-          // group name per question keeps drags row-locked
-          const groupName = `row-${qIndex}`;
+          const groupName = `row-${qIndex}`;  // row-locked DnD
           ulUns.dataset.row = groupName;
 
           brands.forEach(b => {
@@ -157,7 +156,7 @@
         new Sortable(ul, {
           group: { name: groupName, pull: true, put: true },
           animation: 150,
-          onMove: e => e.from.dataset.row === e.to.dataset.row, // lock to row
+          onMove: e => e.from.dataset.row === e.to.dataset.row,
           onSort: () => { updateRanks(); triggerChange(); }
         });
       });
@@ -237,12 +236,10 @@
         const row = questionToRowEl.get(question);
         if (!row) return;
 
-        // find the brand card in this row
         const safeBrand = (window.CSS && CSS.escape) ? CSS.escape(brand) : brand;
         const li = row.querySelector(`li[data-brand="${safeBrand}"]`);
         if (!li) return;
 
-        // target list: unsorted (index 0) or one of the Likert columns
         let targetUl;
         if (scaleLabels.includes(scale)) {
           const colIdx = scaleLabels.indexOf(scale) + 1; // +1 skips Unsorted

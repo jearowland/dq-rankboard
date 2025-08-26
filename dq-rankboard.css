@@ -1,4 +1,4 @@
-:root {
+:root{
   --dq-border:#ccc;
   --dq-bg:#f9f9f9;
   --dq-badge:#FF2B7D;
@@ -8,123 +8,150 @@
   --bonorigo-plum:#922B5D;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body{font-family:Arial,sans-serif;margin:20px}
+
+/* BOARD WRAPPER */
+.dq-board{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:24px;
+  width:100%;
+  max-width:100%;
+  overflow:hidden; /* prevent escaping parent */
 }
 
-h2 {
-  font-size: 24px;
-  margin-bottom: 16px;
+/* SECTIONS */
+.dq-domain-section,
+.dq-subdomain-section{
+  width:100%;
+  max-width:100%;
 }
 
-.dq-board {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 30px;
+/* DOMAIN / SUBDOMAIN HEADERS */
+.dq-domain-header{
+  background:var(--bonorigo-plum);
+  color:#fff;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  padding:10px 12px;
+  border-radius:8px;
+  margin:18px 0 10px 0;
+  width:100%;
 }
 
-/* Header row and question rows */
+.dq-subdomain-header{
+  font-size:18px;                 /* slightly larger than question label */
+  font-weight:bold;
+  color:var(--bonorigo-pink);     /* Bonorigo pink */
+  margin:14px 0 8px 0;
+}
+
+/* GRID: header row + question rows */
 .dq-header-row,
-.dq-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+.dq-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  width:100%;
 }
 
-/* Column headers */
-.dq-header-spacer {
-  flex: 0 0 300px;
-}
-.dq-header-unsorted {
-  flex: 0 0 200px;
-  font-weight: bold;
-  text-align: center;
-}
-.dq-header-col {
-  flex: 1;
-  min-width: 150px;
-  font-weight: bold;
-  text-align: center;
+/* RESPONSIVE LAYOUT USING PERCENTAGES
+   - Row label ~22%
+   - Unsorted   ~16%
+   - Remaining space divided among scale columns
+*/
+.dq-header-spacer,
+.dq-row-label{
+  flex:0 0 22%;
+  max-width:22%;
 }
 
-/* Question label */
-.dq-row-label {
-  flex: 0 0 300px;
-  font-weight: bold;
+.dq-header-unsorted,
+.dq-unsorted{
+  flex:0 0 16%;
+  max-width:16%;
 }
 
-/* Drop zones */
+.dq-header-col,
+.dq-col{
+  flex:1 1 0;           /* share remaining width equally */
+  min-width:0;          /* allow shrinking instead of overflowing */
+}
+
+/* HEADER TEXT */
+.dq-header-unsorted,
+.dq-header-col{
+  font-weight:bold;
+  text-align:center;
+}
+
+/* QUESTION LABEL */
+.dq-row-label{
+  font-weight:bold;
+  line-height:1.3;
+}
+
+/* DROP ZONES */
 .dq-unsorted,
-.dq-col {
-  border: 1px solid var(--dq-border);
-  border-radius: 6px;
-  padding: 8px;
-  background: var(--dq-bg);
-}
-.dq-unsorted {
-  flex: 0 0 200px;
-}
-.dq-col {
-  flex: 1;
-  min-width: 150px;
+.dq-col{
+  border:1px solid var(--dq-border);
+  border-radius:6px;
+  padding:8px;
+  background:var(--dq-bg);
 }
 
-/* Card list */
-ul.dq-card-list {
-  list-style: none;
-  padding: 0;
-  min-height: 60px;
-  margin: 0;
-}
-ul.dq-card-list li {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-  margin-bottom: 8px;
-  padding: 8px;
-  text-align: center;
-  position: relative;
-  font-size: 14px;
-}
-ul.dq-card-list img {
-  width: 50px;
-  display: block;
-  margin: 0 auto 6px;
+/* LISTS / CARDS */
+ul.dq-card-list{list-style:none;padding:0;margin:0;min-height:56px}
+
+ul.dq-card-list li{
+  position:relative;
+  border:1px solid #ddd;
+  border-radius:6px;
+  background:#fff;
+  margin-bottom:8px;
+  padding:10px 52px 10px 10px;  /* right pad for badge so it never overlaps text */
+  display:flex;                 /* ← left-align contents */
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  font-size:14px;
 }
 
-/* Rank badge */
-.dq-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: var(--dq-badge);
-  color: #fff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
+ul.dq-card-list img{
+  width:40px;
+  height:auto;
+  flex:0 0 auto;
+  display:block;
 }
 
-/* --- NEW: Domain & Subdomain headers --- */
-.dq-domain-header {
-  background: var(--bonorigo-plum);
-  color: #fff;
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  padding: 10px;
-  border-radius: 8px;
-  margin: 20px 0 10px 0;
+ul.dq-card-list li > div{
+  flex:1 1 auto;                /* brand name container grows */
+  line-height:1.25;
 }
 
-.dq-subdomain-header {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--bonorigo-pink);
-  margin: 12px 0 8px 0;
+/* RANK BADGE */
+.dq-badge{
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:var(--dq-badge);
+  color:#fff;
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+}
+
+/* spacing for the repeated headers */
+.dq-subdomain-section > .dq-header-row{
+  margin-bottom:8px;
 }
