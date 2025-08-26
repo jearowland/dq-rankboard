@@ -8,7 +8,7 @@
   --bonorigo-plum:#922B5D;
 
   /* locked widths */
-  --dq-col-min:10%;   /* NEW: shared min width for unsorted + scale cols (and headers) */
+  --dq-col-min:12%;   /* NEW: shared min width for unsorted + scale cols (and headers) */
 }
 
 *,
