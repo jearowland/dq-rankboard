@@ -71,18 +71,22 @@ body{font-family:Arial,sans-serif;margin:20px}
 .dq-row-label{
   flex:0 0 var(--dq-col-min);
   min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
+  max-width:133px;
 }
 
 .dq-header-unsorted,
 .dq-unsorted{
   flex:0 0 var(--dq-col-min);
   min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
+  max-width:133px;
+  
 }
 
 .dq-header-col,
 .dq-col{
   flex:1 1 var(--dq-col-min);   /* grow/shrink but respect the same minimum */
   min-width:var(--dq-col-min);  /* 🔒 shared min width */
+  max-width:133px;
 }
 
 /* HEADER CELLS – plain text only (no box) */
@@ -109,6 +113,7 @@ body{font-family:Arial,sans-serif;margin:20px}
   border-radius:6px;
   padding:8px;
   background:var(--dq-bg);
+  margin-bottom: 8px;
 }
 
 /* LISTS / CARDS */
