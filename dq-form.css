@@ -1,22 +1,29 @@
 /* ===== Simplified DQ headings only ===== */
+:root{
+  /* Bonorigo brand colors */
+  --bonorigo-pink:#EC008C;
+  --bonorigo-plum:#922B5D;
+}
 
 /* H1 matches .dq-domain-header */
 .dq-form h1 {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.2;
-  margin: 20px 0 8px;
-  border-bottom: 2px solid currentColor;
-  padding-bottom: 4px;
+  background:var(--bonorigo-plum);
+  color:#fff;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  padding:10px 12px;
+  border-radius:8px;
+  margin:18px 0 10px 0;
+  width:100%;
 }
 
 /* H2 matches .dq-subdomain-header */
 .dq-form h2 {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-  margin: 14px 0 6px;
-  opacity: 0.9;
+  font-size:18px;
+  font-weight:bold;
+  color:var(--bonorigo-pink);
+  margin:14px 0 8px 0;
 }
 
 /* H3 = one step smaller, consistent style */
