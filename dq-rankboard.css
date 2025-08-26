@@ -70,13 +70,13 @@ body{font-family:Arial,sans-serif;margin:20px}
 /* RESPONSIVE LAYOUT USING PERCENTAGES */
 .dq-header-spacer,
 .dq-row-label{
-  flex:0 0 var(--dq-label-w);
-  max-width:var(--dq-label-w);
+  flex:0 0 var(--dq-col-min);
+  min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
 }
 
 .dq-header-unsorted,
 .dq-unsorted{
-  max-width:var(--dq-unsorted-w);
+  flex:0 0 var(--dq-col-min);
   min-width:var(--dq-col-min);  /* 🔒 match scale column minimums */
 }
 
