@@ -106,7 +106,13 @@ body{font-family:Arial,sans-serif;margin:20px}
 }
 
 /* DROP ZONES (interactive cells) */
-.dq-unsorted,
+.dq-unsorted{
+  border:1px solid var(--dq-border);
+  border-radius:6px;
+  padding:8px;
+  background:darkgrey;
+  margin-bottom: 8px;
+}
 .dq-col{
   border:1px solid var(--dq-border);
   border-radius:6px;
