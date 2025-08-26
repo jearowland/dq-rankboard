@@ -8,55 +8,44 @@
       questions,
       scaleLabels = ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
       scaleWeight,
-      onChange,        // optional callback
-      initialState,    // optional restore array
-      questionMeta,    // optional: array aligned with questions -> {domain, subdomain}
+      onChange,        // optional callback(stateArray)
+      initialState,    // optional restore array [{question, brand, scale, rank?, value?}, ...]
+      questionMeta,    // optional: array aligned with `questions` -> {domain, subdomain}
       questionMetaMap  // optional: map keyed by question text -> {domain, subdomain}
     } = config;
 
     const weight = scaleWeight || Object.fromEntries(scaleLabels.map((l, i) => [l, i + 1]));
 
-    // --- metadata helpers ---
+    // ------- helpers -------
     function metaFor(idx, qText) {
       if (questionMeta && questionMeta[idx]) return questionMeta[idx];
       if (questionMetaMap && qText && questionMetaMap[qText]) return questionMetaMap[qText];
       return { domain: null, subdomain: null };
     }
-
-    function normalise(s) {
+    function norm(s) {
       return (s == null || s === '') ? null : String(s);
     }
 
-    function buildGroups() {
-      // If no metadata, single ungrouped bucket
+    // Build a nested structure: Domain -> Subdomain -> [{qText, qIndex}]
+    function buildDomainStructure() {
       const anyMeta = !!(questionMeta || questionMetaMap);
       if (!anyMeta) {
-        return [{
-          domain: null,
-          subdomain: null,
-          rows: questions.map((q, i) => ({ qText: q, qIndex: i }))
-        }];
+        // single bucket: no domain/subdomain grouping
+        return { '': { '': questions.map((q, i) => ({ qText: q, qIndex: i })) } };
       }
-
-      // Build domain/subdomain grouping in question order
-      const groups = [];
+      const struct = {};
       questions.forEach((q, i) => {
         const m = metaFor(i, q) || {};
-        const domain = normalise(m.domain) || 'Other';
-        const subdomain = normalise(m.subdomain) || null;
-
-        // try to reuse last matching group (domain + subdomain adjacency)
-        const last = groups[groups.length - 1];
-        if (last && last.domain === domain && last.subdomain === subdomain) {
-          last.rows.push({ qText: q, qIndex: i });
-        } else {
-          groups.push({ domain, subdomain, rows: [{ qText: q, qIndex: i }] });
-        }
+        const domain = norm(m.domain) || 'Other';
+        const subdomain = norm(m.subdomain) || '';
+        if (!struct[domain]) struct[domain] = {};
+        if (!struct[domain][subdomain]) struct[domain][subdomain] = [];
+        struct[domain][subdomain].push({ qText: q, qIndex: i });
       });
-      return groups;
+      return struct;
     }
 
-    // Clear previous content
+    // ------- DOM build -------
     container.innerHTML = '';
     const board = document.createElement('div');
     board.className = 'dq-board';
@@ -68,97 +57,105 @@
       ${scaleLabels.map(l => `<div class="dq-header-col">${l}</div>`).join('')}
     </div>`;
 
-    // Build grouped sections + rows
-    const groups = buildGroups();
-    // Map of question text -> row element for fast restore
+    const structure = buildDomainStructure();
+
+    // Fast lookup map: question text -> row element
     const questionToRowEl = new Map();
 
-    groups.forEach((g, gIdx) => {
-      // Section wrapper
-      const section = document.createElement('div');
-      section.className = 'dq-section';
-      section.dataset.sectionIndex = String(gIdx);
+    // Build per domain -> subdomain -> rows
+    Object.keys(structure).forEach(domain => {
+      const domainSection = document.createElement('div');
+      domainSection.className = 'dq-domain-section';
+      domainSection.dataset.domain = domain || '';
 
-      // Domain header (if present)
-      if (g.domain) {
+      // Domain header (once)
+      if (domain) {
         const d = document.createElement('div');
         d.className = 'dq-domain-header';
-        d.textContent = g.domain;
-        section.appendChild(d);
+        d.textContent = domain;
+        domainSection.appendChild(d);
       }
 
-      // Subdomain header (if present)
-      if (g.subdomain) {
-        const s = document.createElement('div');
-        s.className = 'dq-subdomain-header';
-        s.textContent = g.subdomain;
-        section.appendChild(s);
-      }
+      // Subdomains
+      Object.keys(structure[domain]).forEach(subdomain => {
+        const subSection = document.createElement('div');
+        subSection.className = 'dq-subdomain-section';
+        subSection.dataset.subdomain = subdomain || '';
 
-      // Rows for this group
-      g.rows.forEach(({ qText, qIndex }) => {
-        const row = document.createElement('div');
-        row.className = 'dq-row';
-        row.dataset.qIndex = String(qIndex);
-        const m = metaFor(qIndex, qText);
-        if (m && m.domain) row.dataset.domain = m.domain;
-        if (m && m.subdomain) row.dataset.subdomain = m.subdomain;
+        if (subdomain) {
+          const s = document.createElement('div');
+          s.className = 'dq-subdomain-header';
+          s.textContent = subdomain;
+          subSection.appendChild(s);
+        }
 
-        row.innerHTML = `<div class="dq-row-label">${qText}</div>`;
+        // Rows (questions) under this subdomain
+        structure[domain][subdomain].forEach(({ qText, qIndex }) => {
+          const row = document.createElement('div');
+          row.className = 'dq-row';
+          row.dataset.qIndex = String(qIndex);
+          const m = metaFor(qIndex, qText);
+          if (m && m.domain) row.dataset.domain = m.domain;
+          if (m && m.subdomain) row.dataset.subdomain = m.subdomain;
 
-        // Unsorted column
-        const uns = document.createElement('div');
-        uns.className = 'dq-unsorted';
-        const ulUns = document.createElement('ul');
-        ulUns.className = 'dq-card-list';
-        ulUns.dataset.row = `row-${qIndex}`;
-        brands.forEach(b => {
-          const li = document.createElement('li');
-          li.dataset.brand = b.name;
-          li.innerHTML = `<img src="${b.img}" alt="${b.name}"><div>${b.name}</div><div class="dq-badge"></div>`;
-          ulUns.appendChild(li);
+          row.innerHTML = `<div class="dq-row-label">${qText}</div>`;
+
+          // Unsorted column
+          const uns = document.createElement('div');
+          uns.className = 'dq-unsorted';
+          const ulUns = document.createElement('ul');
+          ulUns.className = 'dq-card-list';
+          // group name per question keeps drags row-locked
+          const groupName = `row-${qIndex}`;
+          ulUns.dataset.row = groupName;
+
+          brands.forEach(b => {
+            const li = document.createElement('li');
+            li.dataset.brand = b.name;
+            li.innerHTML = `<img src="${b.img}" alt="${b.name}"><div>${b.name}</div><div class="dq-badge"></div>`;
+            ulUns.appendChild(li);
+          });
+          uns.appendChild(ulUns);
+          row.appendChild(uns);
+
+          // Likert columns
+          scaleLabels.forEach(() => {
+            const col = document.createElement('div');
+            col.className = 'dq-col';
+            const ul = document.createElement('ul');
+            ul.className = 'dq-card-list';
+            ul.dataset.row = groupName;
+            col.appendChild(ul);
+            row.appendChild(col);
+          });
+
+          subSection.appendChild(row);
+          questionToRowEl.set(qText, row);
         });
-        uns.appendChild(ulUns);
-        row.appendChild(uns);
 
-        // Likert columns
-        scaleLabels.forEach(() => {
-          const col = document.createElement('div');
-          col.className = 'dq-col';
-          const ul = document.createElement('ul');
-          ul.className = 'dq-card-list';
-          ul.dataset.row = `row-${qIndex}`;
-          col.appendChild(ul);
-          row.appendChild(col);
-        });
-
-        section.appendChild(row);
-        questionToRowEl.set(qText, row);
+        domainSection.appendChild(subSection);
       });
 
-      board.appendChild(section);
+      board.appendChild(domainSection);
     });
 
     container.appendChild(board);
 
-    // Drag-and-drop wiring (row-locked by question index)
-    board.querySelectorAll('.dq-row').forEach((row) => {
+    // ------- DnD wiring (row-locked) -------
+    board.querySelectorAll('.dq-row').forEach(row => {
       const groupName = row.querySelector('ul.dq-card-list')?.dataset.row || `row-${row.dataset.qIndex}`;
       row.querySelectorAll('ul.dq-card-list').forEach(ul => {
         ul.dataset.row = groupName;
         new Sortable(ul, {
           group: { name: groupName, pull: true, put: true },
           animation: 150,
-          onMove: e => e.from.dataset.row === e.to.dataset.row,
-          onSort: () => {
-            updateRanks();
-            triggerChange();
-          }
+          onMove: e => e.from.dataset.row === e.to.dataset.row, // lock to row
+          onSort: () => { updateRanks(); triggerChange(); }
         });
       });
     });
 
-    // Ranking logic (compute global ranks per row; display as badge)
+    // ------- ranking (badge = global rank per row) -------
     function updateRanks() {
       board.querySelectorAll('.dq-row').forEach(row => {
         const lists = Array.from(row.querySelectorAll('ul.dq-card-list'));
@@ -167,7 +164,7 @@
         lists.forEach((ul, i) => {
           if (i === 0) {
             ul.querySelectorAll('.dq-badge').forEach(b => b.textContent = '');
-            return;
+            return; // skip Unsorted
           }
           const scale = scaleLabels[i - 1];
           const children = Array.from(ul.children);
@@ -188,19 +185,18 @@
       }
     }
 
-    // Public API
+    // ------- Public API -------
     const api = {
       getResultsJson() {
         const out = [];
-        // Only iterate real rows (not headers)
-        board.querySelectorAll('.dq-row').forEach((row) => {
+        board.querySelectorAll('.dq-row').forEach(row => {
           const qIdx = parseInt(row.dataset.qIndex, 10);
           const q = questions[qIdx];
           const m = metaFor(qIdx, q);
           row.querySelectorAll('.dq-col').forEach((col, cIdx) => {
             const scale = scaleLabels[cIdx];
             const scaleVal = weight[scale];
-            Array.from(col.querySelectorAll('li')).forEach((li) => {
+            Array.from(col.querySelectorAll('li')).forEach(li => {
               const badge = li.querySelector('.dq-badge');
               const globalRank = parseInt(badge && badge.textContent, 10);
               out.push({
@@ -224,7 +220,7 @@
       }
     };
 
-    // Restore from initialState
+    // ------- restore from initialState -------
     function restoreState(state) {
       if (!state || !Array.isArray(state)) return;
       state.forEach(item => {
@@ -233,26 +229,29 @@
         const row = questionToRowEl.get(question);
         if (!row) return;
 
-        const li = row.querySelector(`li[data-brand="${CSS.escape ? CSS.escape(brand) : brand}"]`);
+        // find the brand card in this row
+        const safeBrand = (window.CSS && CSS.escape) ? CSS.escape(brand) : brand;
+        const li = row.querySelector(`li[data-brand="${safeBrand}"]`);
         if (!li) return;
 
+        // target list: unsorted (index 0) or one of the Likert columns
         let targetUl;
         if (scaleLabels.includes(scale)) {
-          const colIdx = scaleLabels.indexOf(scale) + 1; // +1 skips unsorted
+          const colIdx = scaleLabels.indexOf(scale) + 1; // +1 skips Unsorted
           targetUl = row.querySelectorAll('ul.dq-card-list')[colIdx];
         } else {
-          targetUl = row.querySelector('ul.dq-card-list'); // unsorted
+          targetUl = row.querySelector('ul.dq-card-list'); // Unsorted
         }
         if (targetUl) targetUl.appendChild(li);
       });
     }
 
+    // Initial render pass
     if (initialState) {
       restoreState(initialState);
       updateRanks();
     }
-
-    // Emit initial state
+    // Emit initial snapshot
     triggerChange();
 
     return api;
