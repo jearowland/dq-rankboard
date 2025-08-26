@@ -6,7 +6,7 @@
 }
 
 /* H1 matches .dq-domain-header */
-.dq-form h1 {
+.dq-form h2 {
   background:var(--bonorigo-plum);
   color:#fff;
   font-size:22px;
@@ -19,7 +19,7 @@
 }
 
 /* H2 matches .dq-subdomain-header */
-.dq-form h2 {
+.dq-form h3 {
   font-size:18px;
   font-weight:bold;
   color:var(--bonorigo-pink);
@@ -27,7 +27,7 @@
 }
 
 /* H3 = one step smaller, consistent style */
-.dq-form h3 {
+.dq-form h4 {
   font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
